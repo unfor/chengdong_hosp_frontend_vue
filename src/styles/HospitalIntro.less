@@ -1,0 +1,95 @@
+// 导入全局变量
+@import './global.less';
+
+// HospitalIntro页面样式
+.hospital-intro-container {
+  .intro-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      color: @primary-color;
+    }
+  }
+
+  .edit-hint {
+    font-size: 14px;
+  }
+
+  .intro-card {
+    margin-bottom: 24px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .hospital-image {
+      width: 100%;
+      height: auto;
+      max-height: 500px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .intro-content {
+      line-height: 1.8;
+      text-align: justify;
+      font-size: 16px;
+
+      p {
+        margin-bottom: 16px;
+      }
+    }
+  }
+
+  .departments-card {
+    .departments-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .department-item {
+      background-color: #fff;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 18px;
+      min-width: 140px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // 触摸大屏优化
+  @media (min-width: 1200px) {
+    .intro-content {
+      font-size: 20px;
+    }
+
+    .department-item {
+      font-size: 22px;
+      padding: 16px 32px;
+      min-width: 180px;
+    }
+  }
+
+  @media (min-width: 1920px) {
+    .intro-content {
+      font-size: 24px;
+    }
+
+    .department-item {
+      font-size: 26px;
+      padding: 20px 40px;
+      min-width: 220px;
+      border-radius: 12px;
+    }
+
+    .hospital-image {
+      max-height: 600px;
+    }
+  }
+}

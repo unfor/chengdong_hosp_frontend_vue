@@ -1,0 +1,130 @@
+// 导入全局变量
+@import './global.less';
+
+// ScheduleInfo页面样式
+.schedule-info-container {
+  width: 100%;
+  padding: 0 20px;
+  height: calc(100% - 75px);
+  .schedule-title {
+    margin-bottom: 30px;
+    color: @primary-color;
+    font-size: 28px;
+  }
+
+  .schedule-content{
+    width: 100%;
+    height: calc(100% - 35px);
+    overflow-y: auto;
+  }
+
+  .schedule-card {
+    width: 100%;
+    margin: 0 auto 24px;
+    padding: 24px;
+  }
+
+  .doctor-card {
+    background-color: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    transition: box-shadow 0.3s;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .doctor-info {
+    display: flex;
+    align-items: center;
+
+    .ant-avatar {
+      width: 64px;
+      height: 64px;
+      margin-right: 16px;
+    }
+
+    .doctor-details {
+      flex: 1;
+    }
+
+    .doctor-name {
+      display: block;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .doctor-position {
+      display: block;
+      font-size: 16px;
+      color: @text-color-secondary;
+      margin-bottom: 6px;
+    }
+
+    .doctor-duty-time {
+      display: block;
+      font-size: 16px;
+      color: @primary-color;
+      font-weight: 500;
+    }
+  }
+
+  .no-schedule-card {
+    text-align: center;
+    padding: 40px;
+  }
+
+  // 触摸大屏优化
+  @media (min-width: 1200px) {
+    .doctor-info {
+      .ant-avatar {
+        width: 90px;
+        height: 90px;
+      }
+
+      .doctor-name {
+        font-size: 24px;
+      }
+
+      .doctor-position,
+      .doctor-duty-time {
+        font-size: 18px;
+      }
+    }
+
+    .doctor-card {
+      padding: 28px;
+    }
+  }
+
+  @media (min-width: 1920px) {
+    .doctor-info {
+      .ant-avatar {
+        width: 100px;
+        height: 100px;
+      }
+
+      .doctor-name {
+        font-size: 28px;
+      }
+
+      .doctor-position,
+      .doctor-duty-time {
+        font-size: 20px;
+      }
+    }
+
+    .doctor-card {
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+
+    .schedule-card {
+      padding: 36px;
+    }
+  }
+}
