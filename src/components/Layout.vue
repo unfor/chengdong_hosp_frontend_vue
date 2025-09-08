@@ -8,23 +8,60 @@
           new Date(currentTime).toLocaleString()
         }}</span>
       </div>
-      <el-button type="primary" @click="handleLogout" class="logout-btn" v-show="isAdmin">
+      <el-button
+        type="primary"
+        @click="handleLogout"
+        class="logout-btn"
+        v-show="isAdmin"
+      >
         退出登录
       </el-button>
     </div>
   </div>
   <div class="layout">
-    <el-tabs v-model="activeTab" @tab-change="handleTabChange" class="tab-container">
-      <el-tab-pane label="医院简介">
+    <el-tabs
+      v-model="activeTab"
+      @tab-change="handleTabChange"
+      class="tab-container"
+      type="border-card"
+    >
+      <el-tab-pane>
+        <template #label>
+          <span class="custom-tabs-label">
+            <el-icon><HomeFilled /></el-icon>
+            <span>医院概况</span>
+          </span>
+        </template>
         <HospitalIntro />
       </el-tab-pane>
-      <el-tab-pane label="排班信息">
+
+      <el-tab-pane label="值班信息">
+        <template #label>
+          <span class="custom-tabs-label">
+            <el-icon><Avatar /></el-icon>
+            <span>值班信息</span>
+          </span>
+        </template>
         <ScheduleInfo />
       </el-tab-pane>
+
       <el-tab-pane v-if="!isAdmin" label="管理员登录">
+        <template #label>
+          <span class="custom-tabs-label">
+            <el-icon><Key /></el-icon>
+            <span>管理员登录</span>
+          </span>
+        </template>
         <AdminLogin @login-success="handleLoginSuccess" />
       </el-tab-pane>
+
       <el-tab-pane v-if="isAdmin" label="管理员设置">
+        <template #label>
+          <span class="custom-tabs-label">
+            <el-icon><Tools /></el-icon>
+            <span>管理员设置</span>
+          </span>
+        </template>
         <AdminPage />
       </el-tab-pane>
     </el-tabs>

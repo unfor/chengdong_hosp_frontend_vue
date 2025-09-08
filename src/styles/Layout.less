@@ -10,6 +10,7 @@
   height: 60px;
   background-color: #1F2937;
   padding: 0 40px;
+  margin-bottom: 10px;
 }
 
 .header-right {
@@ -87,14 +88,19 @@
 }
 
 .tab-container {
-  .el-tabs__header {
-    .el-tabs__nav-wrap {
-      .el-tabs__nav-scroll {
-        .el-tabs__nav {
-          left: 50%;
-          transform: translateX(-50%) !important;
-        }
-      }
+  ::v-deep(.el-tabs__nav) {
+    left: 50%;
+    transform: translateX(-50%) !important;
+  }
+
+  .custom-tabs-label{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 18px;
+    >span{
+      margin-left: 8px;
     }
   }
 }
