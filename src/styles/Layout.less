@@ -88,18 +88,20 @@
 }
 
 .tab-container {
-  ::v-deep(.el-tabs__nav) {
-    left: 50%;
-    transform: translateX(-50%) !important;
+  :deep(.el-tabs__nav-wrap) {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
   }
 
-  .custom-tabs-label{
+  .custom-tabs-label {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     font-size: 18px;
-    >span{
+
+    >span {
       margin-left: 8px;
     }
   }

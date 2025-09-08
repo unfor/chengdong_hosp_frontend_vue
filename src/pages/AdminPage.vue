@@ -1,8 +1,7 @@
 <template>
   <div class="admin-page-container">
-    <h3 class="admin-title">管理员功能</h3>
 
-    <el-tabs v-model="activeTab" type="card" size="large">
+    <el-tabs v-model="activeTab" type="card" size="large" class="inner-tab-container">
       <!-- 导入人员信息 -->
       <el-tab-pane name="import">
         <template #label>
