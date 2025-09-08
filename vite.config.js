@@ -14,6 +14,16 @@ export default defineConfig({
     optimizeDeps: {
         include: ['element-plus']
     },
+    devServer: {
+      // 暂时不需要
+        // proxy: {
+        //     '/api': {
+        //         target: 'http://localhost:3000',
+        //         changeOrigin: true,
+        //         rewrite: (path) => path.replace(/^\/api/, '')
+        //     }
+        // }
+    },
     plugins: [
       vue(),
       AutoImport({

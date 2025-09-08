@@ -53,6 +53,7 @@
 import { ref, defineOptions } from "vue";
 import { ElMessage } from "element-plus";
 import CryptoJS from "crypto-js";
+import { adminLogin } from "../services/admin";
 
 defineOptions({
   name: "AdminLogin",
@@ -88,27 +89,14 @@ const handleLogin = async () => {
     const { username, password } = form.value;
     const hashedPassword = CryptoJS.MD5(password).toString();
 
-    // 检查是否存在管理员账户信息
-    const adminInfo = localStorage.getItem("adminInfo");
-    let isValid = false;
+    console.log("hashedPassword", hashedPassword);
 
-    if (adminInfo) {
-      try {
-        const { savedUsername, savedPassword } = JSON.parse(adminInfo);
-        isValid =
-          savedUsername === username && savedPassword === hashedPassword;
-      } catch (e) {
-        console.error("Failed to parse admin info:", e);
-      }
-    } else {
-      // 如果没有保存的管理员信息，使用默认账户
-      // 默认账户：admin，密码：admin123
-      isValid =
-        username === "admin" &&
-        hashedPassword === "21232f297a57a5a743894a0e4a801fc3";
-    }
+    const res = await adminLogin({
+      username,
+      password: hashedPassword,
+    });
 
-    if (isValid) {
+    if (res) {
       // 登录成功，保存token到localStorage
       localStorage.setItem("adminToken", "admin-token-" + Date.now());
       ElMessage.success("登录成功！");

@@ -9,8 +9,8 @@ import request from './request'
 export const adminLogin = (params) => {
   return request({
     url: '/admin/login',
-    method: 'GET',
-    params
+    method: 'POST',
+    data: params
   })
 }
 

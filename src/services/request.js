@@ -29,13 +29,13 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   response => {
-    // 假设后端统一返回格式为 { code: 200, data: ..., message: '' }
+    // 假设后端统一返回格式为 { status: 200, data: ..., message: '' }
     const res = response.data
     
     // 业务逻辑错误处理
-    if (res.code !== 200) {
-      ElMessage.error(res.message || '操作失败')
-      return Promise.reject(new Error(res.message || 'Error'))
+    if (response.status !== 200) {
+      ElMessage.error(response.message || '操作失败')
+      return Promise.reject(new Error(response.message || 'Error'))
     }
     
     return res
