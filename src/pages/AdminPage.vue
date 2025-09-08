@@ -294,6 +294,8 @@
 <script setup>
 import { ref, onMounted, reactive, defineOptions } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import CryptoJS from "crypto-js";
+import { updatePassword } from "../services/admin";
 
 defineOptions({
   name: "AdminPage",
@@ -567,32 +569,16 @@ const handlePasswordChange = async () => {
     await passwordFormRef.value.validate();
     const { currentPassword, newPassword } = passwordForm;
 
-    // 验证当前密码
-    const adminInfo = localStorage.getItem("adminInfo");
-    let savedPassword = "admin123"; // 默认密码
-
-    if (adminInfo) {
-      try {
-        const { savedUsername, savedPassword: sp } = JSON.parse(adminInfo);
-        savedPassword = sp;
-      } catch (e) {
-        console.error("Failed to parse admin info:", e);
-      }
+    const hashedCurrentPassword = CryptoJS.MD5(currentPassword).toString();
+    const hashedNewPassword = CryptoJS.MD5(newPassword).toString();
+    const res = await updatePassword({
+      oldPassword: hashedCurrentPassword,
+      newPassword: hashedNewPassword,
+    });
+    if(res.success){
+      passwordModalVisible.value = false;
+      ElMessage.success("密码修改成功");
     }
-
-    if (currentPassword !== savedPassword) {
-      ElMessage.error("当前密码错误");
-      return;
-    }
-
-    // 保存新密码
-    const newAdminInfo = {
-      savedUsername: "admin",
-      savedPassword: newPassword,
-    };
-    localStorage.setItem("adminInfo", JSON.stringify(newAdminInfo));
-    passwordModalVisible.value = false;
-    ElMessage.success("密码修改成功");
   } catch (error) {
     // 表单验证失败
     console.error("Form validation error:", error);

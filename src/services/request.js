@@ -44,6 +44,9 @@ request.interceptors.response.use(
     // HTTP状态码错误处理
     if (error.response) {
       switch (error.response.status) {
+        case 400:
+          ElMessage.error(error.response.data.error)
+          break
         case 401:
           // 未授权，清除token并跳转到登录页
           localStorage.removeItem('adminToken')

@@ -2,15 +2,15 @@ import request from './request'
 
 /**
  * 管理员登录
- * @param {Object} params - 登录参数
- * @param {string} params.username - 用户名
- * @param {string} params.password - 密码
+ * @param {Object} data - 登录参数
+ * @param {string} data.username - 用户名
+ * @param {string} data.password - 密码
  */
-export const adminLogin = (params) => {
+export const adminLogin = (data) => {
   return request({
     url: '/admin/login',
     method: 'POST',
-    data: params
+    data
   })
 }
 
@@ -32,7 +32,7 @@ export const adminLogout = () => {
  */
 export const updatePassword = (data) => {
   return request({
-    url: '/admin/update-pass', // 修正了原接口的拼写错误
+    url: '/admin/update-password', // 修正了原接口的拼写错误
     method: 'POST',
     data
   })
