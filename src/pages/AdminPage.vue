@@ -1,7 +1,11 @@
 <template>
   <div class="admin-page-container">
-
-    <el-tabs v-model="activeTab" type="card" size="large" class="inner-tab-container">
+    <el-tabs
+      v-model="activeTab"
+      type="card"
+      size="large"
+      class="inner-tab-container"
+    >
       <!-- 导入人员信息 -->
       <el-tab-pane name="import">
         <template #label>
@@ -263,23 +267,24 @@
           <el-input
             v-model="hospitalForm.introduction"
             type="textarea"
-            :rows="8"
+            :rows="2"
             placeholder="请输入医院简介"
           />
         </el-form-item>
-        <el-form-item label="医院科室" prop="departments">
-          <el-select
-            v-model="hospitalForm.departments"
-            multiple
-            placeholder="请输入科室名称，按回车确认"
-          >
-            <el-option
-              v-for="dept in departments"
-              :key="dept"
-              :label="dept"
-              :value="dept"
-            />
-          </el-select>
+        <el-form-item label="医院地址" prop="address">
+          <el-input
+            v-model="hospitalForm.address"
+            placeholder="请输入医院地址"
+          />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="hospitalForm.phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="急诊电话" prop="emergencyPhone">
+          <el-input
+            v-model="hospitalForm.emergencyPhone"
+            placeholder="请输入急诊电话"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleHospitalInfoChange"
@@ -296,6 +301,7 @@ import { ref, onMounted, reactive, defineOptions } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import CryptoJS from "crypto-js";
 import { updatePassword } from "../services/admin";
+import { updateHospitalInfo, queryHospitalInfo } from "../services/hospital";
 
 defineOptions({
   name: "AdminPage",
@@ -427,21 +433,24 @@ const loadScheduleData = () => {
 
 // 加载医院信息
 const loadHospitalInfo = () => {
-  const savedInfo = localStorage.getItem("hospitalInfo");
-  if (savedInfo) {
-    try {
-      hospitalInfo.value = JSON.parse(savedInfo);
-    } catch (e) {
-      console.error("Failed to parse hospital info:", e);
-    }
-  } else {
-    // 默认医院信息
-    hospitalInfo.value = {
-      name: "XX医院",
-      introduction: "XX医院是一家综合性三级甲等医院...",
-      departments: [],
-    };
-  }
+  // 从后端查询医院信息
+  queryHospitalInfo()
+    .then((res) => {
+      if (res) {
+        hospitalInfo.value = res;
+        hospitalForm.name = res.name;
+        hospitalForm.introduction = res.introduction;
+        hospitalForm.address = res.address;
+        hospitalForm.phone = res.phone;
+        hospitalForm.emergencyPhone = res.emergencyPhone;
+      } else {
+        ElMessage.error("查询医院信息失败");
+      }
+    })
+    .catch((e) => {
+      console.error("Failed to query hospital info:", e);
+      ElMessage.error("查询医院信息失败");
+    });
 };
 
 // 处理Excel导入
@@ -575,7 +584,7 @@ const handlePasswordChange = async () => {
       oldPassword: hashedCurrentPassword,
       newPassword: hashedNewPassword,
     });
-    if(res.success){
+    if (res.success) {
       passwordModalVisible.value = false;
       ElMessage.success("密码修改成功");
     }
@@ -595,10 +604,12 @@ const handleHospitalModal = () => {
 const handleHospitalInfoChange = async () => {
   try {
     await hospitalFormRef.value.validate();
-    localStorage.setItem("hospitalInfo", JSON.stringify(hospitalForm));
-    Object.assign(hospitalInfo.value, hospitalForm);
-    hospitalModalVisible.value = false;
-    ElMessage.success("医院信息修改成功");
+    const res = await updateHospitalInfo(hospitalForm);
+    if(res){
+      loadHospitalInfo(); // 刷新医院信息
+      hospitalModalVisible.value = false;
+      ElMessage.success("医院信息修改成功");
+    }
   } catch (error) {
     // 表单验证失败
     console.error("Form validation error:", error);

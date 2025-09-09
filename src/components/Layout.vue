@@ -25,17 +25,17 @@
       class="tab-container"
       type="border-card"
     >
-      <el-tab-pane>
+      <el-tab-pane name="0">
         <template #label>
           <span class="custom-tabs-label">
             <el-icon><HomeFilled /></el-icon>
             <span>医院概况</span>
           </span>
         </template>
-        <HospitalIntro />
+        <HospitalIntro :isActiveTab="activeTab == '0'" />
       </el-tab-pane>
 
-      <el-tab-pane label="值班信息">
+      <el-tab-pane name="1" label="值班信息">
         <template #label>
           <span class="custom-tabs-label">
             <el-icon><Avatar /></el-icon>
@@ -45,7 +45,7 @@
         <ScheduleInfo />
       </el-tab-pane>
 
-      <el-tab-pane v-if="!isAdmin" label="管理员登录">
+      <el-tab-pane v-if="!isAdmin" name="2" label="管理员登录">
         <template #label>
           <span class="custom-tabs-label">
             <el-icon><Key /></el-icon>
@@ -55,7 +55,7 @@
         <AdminLogin @login-success="handleLoginSuccess" />
       </el-tab-pane>
 
-      <el-tab-pane v-if="isAdmin" label="管理员设置">
+      <el-tab-pane v-if="isAdmin" name="3" label="管理员设置">
         <template #label>
           <span class="custom-tabs-label">
             <el-icon><Tools /></el-icon>

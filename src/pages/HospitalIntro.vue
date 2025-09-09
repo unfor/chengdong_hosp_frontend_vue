@@ -2,71 +2,99 @@
   <div class="hospital-intro-container">
     <div class="intro-header">
       <h2 class="hospital-title">{{ hospitalInfo.name }}</h2>
-      <el-link v-if="isAdmin" type="primary" class="edit-hint">
-        (管理员可在设置页面修改医院信息)
-      </el-link>
     </div>
 
-    <el-card class="intro-card">
-      <div class="intro-content">
-        <p>{{ hospitalInfo.introduction }}</p>
-      </div>
-    </el-card>
-
-    <el-card class="departments-card" :title="'医院科室'">
-      <div class="departments-list">
-        <div
-          v-for="(dept, index) in hospitalInfo.departments"
-          :key="index"
-          class="department-item"
-        >
-          {{ dept }}
+    <div class="intro-content-container">
+      <el-card class="intro-card" :title="'医院简介'" header="医院简介">
+        <div class="intro-card-content">
+          <p>{{ hospitalInfo.introduction }}</p>
         </div>
-      </div>
-    </el-card>
+      </el-card>
+    </div>
+
+    <div class="contact-card-container" header-class="contact-card-header">
+      <el-card class="intro-card" :title="'联系方式'" header="联系方式">
+        <div class="intro-card-content">
+          <!-- <p>{{ hospitalInfo.introduction }}</p> -->
+          <div class="intro">
+            <div class="intro-item">
+              <el-icon><LocationFilled /></el-icon>
+              <span>医院地址</span>
+            </div>
+            <div class="intro-content">{{ hospitalInfo.address }}</div>
+          </div>
+          <div class="intro intro-phone">
+            <div class="intro-item">
+              <el-icon><PhoneFilled /></el-icon>
+              <span>联系电话</span>
+            </div>
+            <div class="intro-content">
+              <span>总机：{{ hospitalInfo.phone }}</span>
+              <span>急诊：{{ hospitalInfo.emergencyPhone }}</span>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, defineOptions } from "vue";
+import { ref, onMounted, defineOptions, watch, onUpdated } from "vue";
+import { queryHospitalInfo } from "../services/hospital";
+import { ElMessage } from "element-plus";
 
 defineOptions({
   name: "HospitalIntro",
 });
 
-const hospitalInfo = ref({
-  name: "XX医院",
-  introduction:
-    'XX医院是一家综合性三级甲等医院，始建于1950年，是本地区医疗、教学、科研中心。医院占地面积约10万平方米，建筑面积25万平方米，开放床位2000张。医院拥有一支高素质的医护团队，其中高级职称专业技术人员300余人，博士、硕士导师50余人。\n\n医院设有内科、外科、妇产科、儿科、急诊科、重症医学科、麻醉科、检验科、影像科等40余个临床医技科室。拥有先进的医疗设备，如3.0T核磁共振、64排螺旋CT、直线加速器、数字化X光机等。\n\n医院始终坚持"以病人为中心"的服务理念，不断提高医疗质量和服务水平，为广大患者提供优质、高效、便捷的医疗服务。医院先后获得"全国文明单位"、"全国卫生系统先进集体"、"全国百姓放心示范医院"等荣誉称号。',
-  departments: [
-    "内科",
-    "外科",
-    "妇产科",
-    "儿科",
-    "急诊科",
-    "重症医学科",
-    "麻醉科",
-    "检验科",
-    "影像科",
-    "口腔科",
-  ],
+const props = defineProps({
+  isActiveTab: Boolean,
 });
+
+const hospitalInfo = ref({});
 const isAdmin = ref(false);
+
+watch(
+  () => props.isActiveTab,
+  (newVal, oldVal) => {
+    if (!oldVal && newVal) {
+      // 组件从非激活状态切换到激活状态
+      const hospitalInfoString = localStorage.getItem("hospitalInfo");
+      if (hospitalInfoString) {
+        hospitalInfo.value = JSON.parse(hospitalInfoString);
+      } else {
+        loadHospitalInfo();
+      }
+    }
+  },
+  { immediate: true }
+);
+
+// 加载医院信息
+const loadHospitalInfo = () => {
+  // 从后端查询医院信息
+  queryHospitalInfo()
+    .then((res) => {
+      if (res) {
+        hospitalInfo.value = res;
+        localStorage.setItem("hospitalInfo", JSON.stringify(res));
+      } else {
+        ElMessage.error("查询医院信息失败");
+      }
+    })
+    .catch((e) => {
+      console.error("Failed to query hospital info:", e);
+      ElMessage.error("查询医院信息失败");
+    });
+};
 
 onMounted(() => {
   // 检查是否是管理员
   const adminToken = localStorage.getItem("adminToken");
   isAdmin.value = !!adminToken;
 
-  // 从localStorage加载医院信息
-  const savedInfo = localStorage.getItem("hospitalInfo");
-  if (savedInfo) {
-    try {
-      hospitalInfo.value = JSON.parse(savedInfo);
-    } catch (e) {
-      console.error("Failed to parse hospital info:", e);
-    }
-  }
+  loadHospitalInfo();
 });
 </script>
 

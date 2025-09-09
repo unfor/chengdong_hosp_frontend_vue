@@ -11,6 +11,8 @@ import { Avatar } from "@element-plus/icons-vue";
 import { Tools } from "@element-plus/icons-vue";
 import { HomeFilled } from "@element-plus/icons-vue";
 import { Key } from "@element-plus/icons-vue";
+import { LocationFilled } from "@element-plus/icons-vue";
+import { PhoneFilled } from "@element-plus/icons-vue";
 
 const app = createApp(App);
 
@@ -22,4 +24,6 @@ app.component("Avatar", Avatar);
 app.component("Tools", Tools);
 app.component("HomeFilled", HomeFilled);
 app.component("Key", Key);
+app.component("LocationFilled", LocationFilled);
+app.component("PhoneFilled", PhoneFilled);
 app.mount("#app");
