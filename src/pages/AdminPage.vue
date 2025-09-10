@@ -39,36 +39,38 @@
               添加人员
             </el-button>
           </div>
-          <el-table
-            :data="staffData"
-            row-key="id"
-            :page-size="10"
-            style="width: 100%"
-          >
-            <el-table-column prop="name" label="姓名" />
-            <el-table-column prop="department" label="科室" />
-            <el-table-column prop="position" label="职位" />
-            <el-table-column label="操作" width="180">
-              <template #default="scope">
-                <el-button
-                  type="primary"
-                  size="small"
-                  :icon="Edit"
-                  @click="handleEditStaff(scope.row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  danger
-                  size="small"
-                  :icon="Delete"
-                  @click="handleStaffDelete(scope.row.id)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <div ref="staffTableContainer" class="table-container">
+            <el-table
+              :data="staffData"
+              row-key="id"
+              :height="500"
+              style="width: 100%"
+            >
+              <el-table-column prop="name" label="姓名" />
+              <el-table-column prop="department" label="科室" />
+              <el-table-column prop="position" label="职位" />
+              <el-table-column label="操作" width="180">
+                <template #default="scope">
+                  <el-button
+                    type="primary"
+                    size="small"
+                    :icon="Edit"
+                    @click="handleEditStaff(scope.row)"
+                  >
+                    编辑
+                  </el-button>
+                  <el-button
+                    danger
+                    size="small"
+                    :icon="Delete"
+                    @click="handleStaffDelete(scope.row.id)"
+                  >
+                    删除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
         </el-card>
       </el-tab-pane>
 
@@ -297,11 +299,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, defineOptions } from "vue";
+import { ref, onMounted, reactive, defineOptions, onUnmounted, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import CryptoJS from "crypto-js";
 import { updatePassword } from "../services/admin";
 import { updateHospitalInfo, queryHospitalInfo } from "../services/hospital";
+import { importStaffData, queryAllStaffs } from "../services/staff";
 
 defineOptions({
   name: "AdminPage",
@@ -388,7 +391,7 @@ const hospitalRules = {
   ],
 };
 
-// 标签页渲染函数已转换为模板语法
+const staffTableContainer = ref(null);
 
 // 加载数据
 onMounted(() => {
@@ -397,26 +400,33 @@ onMounted(() => {
   loadHospitalInfo();
 });
 
+// 移除窗口大小变化事件监听器
+onUnmounted(() => {
+});
+
 // 加载人员数据
 const loadStaffData = () => {
-  const savedStaff = localStorage.getItem("staffData");
-  if (savedStaff) {
-    try {
-      const data = JSON.parse(savedStaff);
-      staffData.value = data;
-
-      // 初始化排班表单
-      scheduleForm.value = data.map((item) => ({
-        staff: item.name,
-        department: item.department,
-        position: item.position,
-        avatar: item.avatar,
-        dutyTime: "",
-      }));
-    } catch (e) {
-      console.error("Failed to parse staff data:", e);
-    }
-  }
+  queryAllStaffs()
+    .then((res) => {
+      if (res) {
+        staffData.value = res;
+        // 初始化排班表单
+        scheduleForm.value = staffData.value.map((item) => ({
+          staff: item.name,
+          department: item.department,
+          position: item.position,
+          avatar: item.avatar,
+          dutyTime: "",
+        }));
+        nextTick(() => updateStaffTableHeight());
+      } else {
+        ElMessage.error("查询人员信息失败");
+      }
+    })
+    .catch((e) => {
+      console.error("Failed to query staff data:", e);
+      ElMessage.error("查询人员信息失败");
+    });
 };
 
 // 加载排班数据
@@ -455,7 +465,18 @@ const loadHospitalInfo = () => {
 
 // 处理Excel导入
 const handleImport = (file) => {
-  // TODO 处理Excel导入，由后端去解析，前端只取文件地址
+  const formData = new FormData();
+  formData.append("file", file);
+  // 调用后端上传接口
+  importStaffData(formData)
+    .then((response) => {
+      ElMessage.success("文件上传成功");
+      loadStaffData(); // 重新加载人员数据
+    })
+    .catch((error) => {
+      ElMessage.error("文件上传失败: " + error.message);
+    });
+
   return false; // 阻止默认上传
 };
 
@@ -605,7 +626,7 @@ const handleHospitalInfoChange = async () => {
   try {
     await hospitalFormRef.value.validate();
     const res = await updateHospitalInfo(hospitalForm);
-    if(res){
+    if (res) {
       loadHospitalInfo(); // 刷新医院信息
       hospitalModalVisible.value = false;
       ElMessage.success("医院信息修改成功");
