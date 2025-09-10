@@ -50,10 +50,24 @@
               <el-table-column prop="name" label="姓名" />
               <el-table-column prop="department" label="科室" />
               <el-table-column prop="position" label="职位" />
+              <el-table-column prop="phone" label="联系电话" />
               <el-table-column label="照片" width="180">
                 <template #default="scope">
-                  <div style="width: 80px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                    <img :src="`data:image/png;base64,${scope.row.avatar}`" alt="avatar" style="width: 100%; height: 100%;" />
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      background: #f0f0f0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <img
+                      :src="`data:image/png;base64,${scope.row.avatar}`"
+                      alt="avatar"
+                      style="width: 100%; height: 100%"
+                    />
                   </div>
                 </template>
               </el-table-column>
@@ -82,12 +96,15 @@
         </el-card>
       </el-tab-pane>
 
-      <!-- 排班管理 -->
-      <el-tab-pane name="schedule">
+      <!-- 值班详情 -->
+      <el-tab-pane>
         <template #label>
-          <span>排班管理</span>
+          <span class="custom-tabs-label">
+            <!-- <el-icon><Calendar /></el-icon> -->
+            <span>值班详情</span>
+          </span>
         </template>
-        <el-card class="schedule-card"> </el-card>
+        <DutyInfo />
       </el-tab-pane>
 
       <!-- 系统设置 -->
@@ -135,7 +152,12 @@
           <el-input v-model="staffForm.name" placeholder="请输入姓名" />
         </el-form-item>
         <el-form-item label="科室" prop="department">
-          <el-select v-model="staffForm.department" placeholder="请选择科室">
+          <el-select
+            v-model="staffForm.department"
+            placeholder="请选择科室"
+            filterable
+            allow-create
+          >
             <el-option
               v-for="dept in departments"
               :key="dept"
@@ -147,11 +169,25 @@
         <el-form-item label="职位" prop="position">
           <el-input v-model="staffForm.position" placeholder="请输入职位" />
         </el-form-item>
-        <el-form-item label="照片URL" prop="avatar">
-          <el-input
-            v-model="staffForm.avatar"
-            placeholder="请输入照片URL（可选）"
-          />
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="staffForm.phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="照片" prop="avatar">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :on-change="handleAvatarChange"
+            :auto-upload="false"
+          >
+            <img
+              v-if="staffForm.avatar"
+              :src="`data:image/png;base64,${staffForm.avatar}`"
+              class="avatar"
+            />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          </el-upload>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleStaffSave">保存</el-button>
@@ -264,7 +300,14 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import CryptoJS from "crypto-js";
 import { updatePassword } from "../services/admin";
 import { updateHospitalInfo, queryHospitalInfo } from "../services/hospital";
-import { importStaffData, queryAllStaffs } from "../services/staff";
+import {
+  importStaffData,
+  queryAllStaffs,
+  addStaff,
+  updateStaff,
+  deleteStaff,
+} from "../services/staff";
+import DutyInfo from "@pages/DutyInfo.vue";
 
 defineOptions({
   name: "AdminPage",
@@ -304,6 +347,7 @@ const staffForm = reactive({
   name: "",
   department: "",
   position: "",
+  phone: "", // 新增联系电话字段
   avatar: "",
 });
 
@@ -327,6 +371,7 @@ const staffRules = {
   name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
   department: [{ required: true, message: "请选择科室", trigger: "change" }],
   position: [{ required: true, message: "请输入职位", trigger: "blur" }],
+  phone: [{ required: true, message: "请输入联系电话", trigger: "blur" }], // 新增联系电话字段
 };
 
 const passwordRules = {
@@ -369,6 +414,28 @@ const hospitalRules = {
   ],
 };
 
+const beforeAvatarUpload = (file) => {
+  const isJPG = file.type === "image/jpeg" || file.type === "image/png";
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isJPG) {
+    ElMessage.error("上传头像图片只能是 JPG 或 PNG 格式!");
+  }
+  if (!isLt2M) {
+    ElMessage.error("上传头像图片大小不能超过 2MB!");
+  }
+  return isJPG && isLt2M;
+};
+
+const handleAvatarChange = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    staffForm.rawAvatar = e.target.result;
+    staffForm.avatar = e.target.result.replace(/^data:image\/\w+;base64,/, "");
+  };
+  reader.readAsDataURL(file.raw);
+};
+
 const staffTableContainer = ref(null);
 const updateStaffTableHeight = () => {
   if (staffTableContainer.value) {
@@ -387,6 +454,7 @@ const handleResize = () => {
 
 // 加载数据
 onMounted(() => {
+  // TODO:需要初始化当前所有的部门信息，包括新增的科室
   loadStaffData();
   loadHospitalInfo();
   nextTick(() => updateStaffTableHeight());
@@ -398,7 +466,6 @@ onUnmounted(() => {
 });
 
 // 加载人员数据
-
 
 const loadStaffData = () => {
   queryAllStaffs()
@@ -438,7 +505,7 @@ const loadHospitalInfo = () => {
     });
 };
 
-// 处理Excel导入
+// 处理xlsx导入人员数据
 const handleImport = (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -475,40 +542,31 @@ const handleEditStaff = (row) => {
 const handleStaffSave = async () => {
   try {
     await staffFormRef.value.validate();
-    let newData;
+    const newData = { ...staffForm };
     if (editingStaff.value) {
-      // 更新现有人员
-      newData = staffData.value.map((item) =>
-        item.id === editingStaff.value.id ? { ...item, ...staffForm } : item
-      );
-    } else {
-      // 添加新人员
-      const newId =
-        staffData.value.length > 0
-          ? Math.max(...staffData.value.map((item) => item.id)) + 1
-          : 1;
-      newData = [...staffData.value, { ...staffForm, id: newId }];
-
-      // 更新排班表单
-      scheduleForm.value.push({
-        staff: staffForm.name,
-        department: staffForm.department,
-        position: staffForm.position,
-        avatar: staffForm.avatar,
-        dutyTime: "",
+      // 编辑成员
+      newData.id = editingStaff.value.id;
+      updateStaff(newData).then((res) => {
+        if (res) {
+          ElMessage.success("更新成功");
+          staffModalVisible.value = false;
+          loadStaffData(); // 刷新人员数据
+        } else {
+          ElMessage.error("更新失败");
+        }
       });
-
-      // 更新科室列表
-      if (!departments.value.includes(staffForm.department)) {
-        departments.value.push(staffForm.department);
-      }
+    } else {
+      // 新建成员
+      addStaff(newData).then((res) => {
+        if (res) {
+          ElMessage.success("新建成功");
+          staffModalVisible.value = false;
+          loadStaffData(); // 刷新人员数据
+        } else {
+          ElMessage.error("新建失败");
+        }
+      });
     }
-
-    // 保存到localStorage
-    localStorage.setItem("staffData", JSON.stringify(newData));
-    staffData.value = newData;
-    staffModalVisible.value = false;
-    ElMessage.success("保存成功");
   } catch (error) {
     // 表单验证失败
     console.error("Form validation error:", error);
@@ -523,19 +581,14 @@ const handleStaffDelete = (id) => {
     type: "warning",
   })
     .then(() => {
-      const newData = staffData.value.filter((item) => item.id !== id);
-      localStorage.setItem("staffData", JSON.stringify(newData));
-      staffData.value = newData;
-
-      // 更新排班表单
-      const index = scheduleForm.value.findIndex(
-        (item) => item.staff === staffData.value.find((s) => s.id === id)?.name
-      );
-      if (index > -1) {
-        scheduleForm.value.splice(index, 1);
-      }
-
-      ElMessage.success("删除成功");
+      deleteStaff(id).then((res) => {
+        if (res) {
+          ElMessage.success("删除成功");
+          loadStaffData(); // 刷新人员数据
+        } else {
+          ElMessage.error("删除失败");
+        }
+      });
     })
     .catch(() => {
       // 用户取消删除
