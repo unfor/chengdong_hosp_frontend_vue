@@ -43,7 +43,7 @@
 
 .layout {
   padding: 0 40px 40px 40px;
-  height: calc(100% - 60px - 8px);
+  height: calc(100vh - 60px - 8px);
 }
 
 // Layout组件样式
@@ -79,6 +79,7 @@
   padding: 0 20px 60px;
   height: calc(100% - 72px);
   overflow: hidden;
+  flex: 1;
 }
 
 .login-button {
@@ -88,10 +89,20 @@
 }
 
 .tab-container {
+  height: 100%;
   :deep(.el-tabs__nav-wrap) {
     display: flex;
     flex-direction: row;
     justify-content: center;
+  }
+
+  :deep(.el-tabs__content){
+    height: 100%;
+    overflow: hidden;
+  }
+
+  :deep(.el-tab-pane){
+    height: 100%;
   }
 
   .custom-tabs-label {

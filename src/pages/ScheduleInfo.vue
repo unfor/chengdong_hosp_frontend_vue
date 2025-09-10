@@ -5,7 +5,7 @@
     <div v-if="scheduleData.length > 0">
       <div v-for="dept in departments" :key="dept">
         <el-card :title="dept" class="schedule-card">
-          <el-row :gutter="[16, 16]">
+          <el-row :gutter="16">
             <el-col
               v-for="item in scheduleData.filter(
                 (item) => item.department === dept
@@ -71,11 +71,18 @@ onMounted(() => {
   if (savedSchedule) {
     try {
       const data = JSON.parse(savedSchedule);
-      scheduleData.value = data;
+      // 确保avatar字段不为null
+      scheduleData.value = data.map(item => ({
+        ...item,
+        name: item.name?.trim() || '',
+        position: item.position?.trim() || '',
+        dutyTime: item.dutyTime?.trim() || '',
+        avatar: item.avatar?.trim() || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
+      }));
 
       // 提取所有科室
       const deptSet = new Set();
-      data.forEach((item) => deptSet.add(item.department));
+      scheduleData.value.forEach((item) => deptSet.add(item.department));
       departments.value = Array.from(deptSet);
     } catch (e) {
       console.error("Failed to parse schedule data:", e);

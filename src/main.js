@@ -10,9 +10,10 @@ import { House } from "@element-plus/icons-vue";
 import { Avatar } from "@element-plus/icons-vue";
 import { Tools } from "@element-plus/icons-vue";
 import { HomeFilled } from "@element-plus/icons-vue";
-import { Key } from "@element-plus/icons-vue";
 import { LocationFilled } from "@element-plus/icons-vue";
 import { PhoneFilled } from "@element-plus/icons-vue";
+import { Delete, Edit } from "@element-plus/icons-vue";
+import { Key, Plus, InfoFilled } from "@element-plus/icons-vue";
 
 const app = createApp(App);
 
@@ -21,9 +22,13 @@ app.component("Clock", Clock);
 app.component("Calendar", Calendar);
 app.component("House", House);
 app.component("Avatar", Avatar);
+app.component("Key", Key);
 app.component("Tools", Tools);
 app.component("HomeFilled", HomeFilled);
-app.component("Key", Key);
 app.component("LocationFilled", LocationFilled);
 app.component("PhoneFilled", PhoneFilled);
+app.component("Plus", Plus);
+app.component("InfoFilled", InfoFilled);
+app.component("Delete", Delete);
+app.component("Edit", Edit);
 app.mount("#app");

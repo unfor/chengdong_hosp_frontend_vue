@@ -5,6 +5,7 @@
       type="card"
       size="large"
       class="inner-tab-container"
+      @tab-change="handleTabChange"
     >
       <!-- 导入人员信息 -->
       <el-tab-pane name="import">
@@ -29,13 +30,13 @@
       </el-tab-pane>
 
       <!-- 人员信息管理 -->
-      <el-tab-pane name="staff">
+      <el-tab-pane name="staff" class="staff-tab-pane">
         <template #label>
           <span>人员信息管理</span>
         </template>
         <el-card class="staff-card">
           <div class="staff-header">
-            <el-button type="primary" :icon="ElPlus" @click="handleAddStaff">
+            <el-button type="primary" @click="handleAddStaff">
               添加人员
             </el-button>
           </div>
@@ -43,7 +44,7 @@
             <el-table
               :data="staffData"
               row-key="id"
-              :height="500"
+              height="100%"
               style="width: 100%"
             >
               <el-table-column prop="name" label="姓名" />
@@ -79,63 +80,7 @@
         <template #label>
           <span>排班管理</span>
         </template>
-        <el-card class="schedule-card">
-          <el-form @submit.prevent="handleScheduleSave" class="schedule-form">
-            <div class="schedule-form-content">
-              <div
-                v-for="(staff, index) in staffData"
-                :key="staff.id"
-                class="schedule-item"
-              >
-                <el-input v-model="scheduleForm[index].staff" type="hidden" />
-                <el-input
-                  v-model="scheduleForm[index].department"
-                  type="hidden"
-                />
-                <el-input
-                  v-model="scheduleForm[index].position"
-                  type="hidden"
-                />
-                <el-input v-model="scheduleForm[index].avatar" type="hidden" />
-                <div class="schedule-item-content">
-                  <el-text strong
-                    >{{ staff.name }} - {{ staff.department }} -
-                    {{ staff.position }}</el-text
-                  >
-                  <el-form-item
-                    label="值班时间"
-                    :prop="`scheduleForm.${index}.dutyTime`"
-                    :rules="[{ required: true, message: '请选择值班时间' }]"
-                  >
-                    <el-select
-                      v-model="scheduleForm[index].dutyTime"
-                      placeholder="请选择值班时间"
-                      style="width: 200px"
-                    >
-                      <el-option
-                        label="上午 8:00-12:00"
-                        value="上午 8:00-12:00"
-                      />
-                      <el-option
-                        label="下午 14:00-18:00"
-                        value="下午 14:00-18:00"
-                      />
-                      <el-option
-                        label="全天 8:00-18:00"
-                        value="全天 8:00-18:00"
-                      />
-                    </el-select>
-                  </el-form-item>
-                </div>
-              </div>
-            </div>
-            <el-form-item v-if="staffData.length > 0">
-              <el-button type="primary" native-type="submit" :icon="Save">
-                保存排班
-              </el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
+        <el-card class="schedule-card"> </el-card>
       </el-tab-pane>
 
       <!-- 系统设置 -->
@@ -155,7 +100,7 @@
             </el-button>
             <el-button
               type="primary"
-              :icon="Info"
+              :icon="InfoFilled"
               @click="handleHospitalModal"
               class="setting-button"
             >
@@ -299,7 +244,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, defineOptions, onUnmounted, nextTick } from "vue";
+import {
+  ref,
+  onMounted,
+  reactive,
+  defineOptions,
+  onUnmounted,
+  nextTick,
+  watch,
+} from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import CryptoJS from "crypto-js";
 import { updatePassword } from "../services/admin";
@@ -312,11 +265,10 @@ defineOptions({
 
 // 状态管理
 const activeTab = ref("import");
+// 状态管理
 const staffData = ref([]);
-const scheduleData = ref([]);
 const hospitalInfo = ref({});
 const departments = ref(["内科", "外科", "妇产科", "儿科", "急诊科"]);
-const scheduleForm = ref([]);
 
 // 模态框状态
 const staffModalVisible = ref(false);
@@ -328,6 +280,17 @@ const editingStaff = ref(null);
 const staffFormRef = ref(null);
 const passwordFormRef = ref(null);
 const hospitalFormRef = ref(null);
+
+const handleTabChange = (tabName) => {
+  if (tabName === "staff") {
+    nextTick(() => updateStaffTableHeight());
+  }
+};
+
+// 监听数据变化更新高度
+watch(staffData, () => {
+  nextTick(() => updateStaffTableHeight());
+});
 
 // 表单数据
 const staffForm = reactive({
@@ -346,6 +309,9 @@ const passwordForm = reactive({
 const hospitalForm = reactive({
   name: "",
   introduction: "",
+  address: "",
+  phone: "",
+  emergencyPhone: "",
   departments: [],
 });
 
@@ -386,22 +352,42 @@ const hospitalRules = {
   introduction: [
     { required: true, message: "请输入医院简介", trigger: "blur" },
   ],
+  address: [{ required: true, message: "请输入医院地址", trigger: "blur" }],
+  phone: [{ required: true, message: "请输入联系电话", trigger: "blur" }],
+  emergencyPhone: [
+    { required: true, message: "请输入急诊电话", trigger: "blur" },
+  ],
   departments: [
     { required: true, message: "请输入医院科室", trigger: "change" },
   ],
 };
 
 const staffTableContainer = ref(null);
+const updateStaffTableHeight = () => {
+  if (staffTableContainer.value) {
+    // 计算可用高度 = 视口高度 - 容器顶部距离 - 底部边距(40px)
+    const viewportHeight = window.innerHeight;
+    const containerTop = staffTableContainer.value.getBoundingClientRect().top;
+    const availableHeight = viewportHeight - containerTop - 40;
+    staffTableContainer.value.style.height = `${availableHeight}px`;
+  }
+};
+
+// 窗口大小变化时更新表格高度
+const handleResize = () => {
+  nextTick(() => updateStaffTableHeight());
+};
 
 // 加载数据
 onMounted(() => {
   loadStaffData();
-  loadScheduleData();
   loadHospitalInfo();
+  nextTick(() => updateStaffTableHeight());
+  window.addEventListener("resize", handleResize);
 });
 
-// 移除窗口大小变化事件监听器
 onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 // 加载人员数据
@@ -410,14 +396,6 @@ const loadStaffData = () => {
     .then((res) => {
       if (res) {
         staffData.value = res;
-        // 初始化排班表单
-        scheduleForm.value = staffData.value.map((item) => ({
-          staff: item.name,
-          department: item.department,
-          position: item.position,
-          avatar: item.avatar,
-          dutyTime: "",
-        }));
         nextTick(() => updateStaffTableHeight());
       } else {
         ElMessage.error("查询人员信息失败");
@@ -427,18 +405,6 @@ const loadStaffData = () => {
       console.error("Failed to query staff data:", e);
       ElMessage.error("查询人员信息失败");
     });
-};
-
-// 加载排班数据
-const loadScheduleData = () => {
-  const savedSchedule = localStorage.getItem("scheduleData");
-  if (savedSchedule) {
-    try {
-      scheduleData.value = JSON.parse(savedSchedule);
-    } catch (e) {
-      console.error("Failed to parse schedule data:", e);
-    }
-  }
 };
 
 // 加载医院信息
@@ -565,24 +531,6 @@ const handleStaffDelete = (id) => {
     .catch(() => {
       // 用户取消删除
     });
-};
-
-// 保存排班
-const handleScheduleSave = () => {
-  const newSchedule = scheduleForm.value
-    .filter((item) => item.dutyTime)
-    .map((item, index) => ({
-      id: index + 1,
-      name: item.staff,
-      department: item.department,
-      position: item.position,
-      dutyTime: item.dutyTime,
-      avatar: item.avatar,
-    }));
-
-  localStorage.setItem("scheduleData", JSON.stringify(newSchedule));
-  scheduleData.value = newSchedule;
-  ElMessage.success("排班保存成功");
 };
 
 // 打开密码修改模态框
