@@ -6,6 +6,10 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
+  server: {
+    maxHeaderSize: 65536 // 增加请求头大小限制以支持base64图片
+  },
+
     resolve: {
         alias: {
             '@pages': path.resolve(__dirname, 'src/pages')

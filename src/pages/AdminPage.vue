@@ -50,6 +50,13 @@
               <el-table-column prop="name" label="姓名" />
               <el-table-column prop="department" label="科室" />
               <el-table-column prop="position" label="职位" />
+              <el-table-column label="照片" width="180">
+                <template #default="scope">
+                  <div style="width: 80px; height: 80px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                    <img :src="`data:image/png;base64,${scope.row.avatar}`" alt="avatar" style="width: 100%; height: 100%;" />
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column label="操作" width="180">
                 <template #default="scope">
                   <el-button
@@ -391,6 +398,8 @@ onUnmounted(() => {
 });
 
 // 加载人员数据
+
+
 const loadStaffData = () => {
   queryAllStaffs()
     .then((res) => {

@@ -55,22 +55,6 @@ const props = defineProps({
 const hospitalInfo = ref({});
 const isAdmin = ref(false);
 
-watch(
-  () => props.isActiveTab,
-  (newVal, oldVal) => {
-    if (!oldVal && newVal) {
-      // 组件从非激活状态切换到激活状态
-      const hospitalInfoString = localStorage.getItem("hospitalInfo");
-      if (hospitalInfoString) {
-        hospitalInfo.value = JSON.parse(hospitalInfoString);
-      } else {
-        loadHospitalInfo();
-      }
-    }
-  },
-  { immediate: true }
-);
-
 // 加载医院信息
 const loadHospitalInfo = () => {
   // 从后端查询医院信息
@@ -88,6 +72,22 @@ const loadHospitalInfo = () => {
       ElMessage.error("查询医院信息失败");
     });
 };
+
+watch(
+  () => props.isActiveTab,
+  (newVal, oldVal) => {
+    if (!oldVal && newVal) {
+      // 组件从非激活状态切换到激活状态
+      const hospitalInfoString = localStorage.getItem("hospitalInfo");
+      if (hospitalInfoString) {
+        hospitalInfo.value = JSON.parse(hospitalInfoString);
+      } else {
+        loadHospitalInfo();
+      }
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   // 检查是否是管理员

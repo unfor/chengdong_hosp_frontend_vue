@@ -120,7 +120,7 @@ const startTimeCount = () => {
 // 组件挂载时检查登录状态
 onMounted(() => {
   checkLoginStatus();
-  startTimeCount();
+  // startTimeCount();
 });
 </script>
 
